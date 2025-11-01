@@ -86,6 +86,19 @@
       margin-bottom: 10px;
       color: #555;
     }
+    .token-list {
+      margin-top: 20px;
+    }
+    .token-list ul {
+      list-style-type: none;
+      padding: 0;
+    }
+    .token-list li {
+      background: #e9ecef;
+      margin: 5px 0;
+      padding: 10px;
+      border-radius: 5px;
+    }
   </style>
 </head>
 <body>
@@ -118,6 +131,10 @@
       <button onclick="nextToken()">⏭️ Next</button>
       <input type="date" id="adminDate" placeholder="Choose a date">
       <button onclick="filterTokensByDate()">Show Tokens</button>
+      <div class="token-list">
+        <h3>Issued Tokens</h3>
+        <ul id="tokenList"></ul>
+      </div>
     </div>
   </div>
 
@@ -132,6 +149,7 @@
       const date = document.getElementById("requestDate").value;
       tokens.push({ token: tokenCounter, name, date });
       document.getElementById("yourToken").innerText = `${name}, your token is: ${tokenCounter} on ${date}`;
+      updateTokenList();
     }
 
     function showAdmin() {
@@ -161,25 +179,41 @@
       document.getElementById("nextToken").innerText = currentToken + 1;
     }
 
+    function updateTokenList() {
+      const tokenList = document.getElementById("tokenList");
+      tokenList.innerHTML = ""; // Clear existing list
+      tokens.forEach(t => {
+        const li = document.createElement("li");
+        li.innerText = `${t.name}: Token ${t.token} (${t.date})`;
+        tokenList.appendChild(li);
+      });
+    }
+
+    function filterTokensByDate() {
+      const selectedDate = document.getElementById("adminDate").value;
+      const tokenList = document.getElementById("tokenList");
+      tokenList.innerHTML = ""; // Clear existing list
+      const filteredTokens = tokens.filter(token => token.date === selectedDate);
+      
+      if (filteredTokens.length > 0) {
+        filteredTokens.forEach(t => {
+          const li = document.createElement("li");
+          li.innerText = `${t.name}: Token ${t.token}`;
+          tokenList.appendChild(li);
+        });
+      } else {
+        const li = document.createElement("li");
+        li.innerText = "No tokens found for the selected date.";
+        tokenList.appendChild(li);
+      }
+    }
+
     function showDate() {
       const today = new Date();
       const formattedDate = today.toLocaleDateString('en-IN', {
         day: 'numeric', month: 'long', year: 'numeric'
       });
       document.getElementById("todayDate").innerText = `📅 Today: ${formattedDate}`;
-    }
-
-    function filterTokensByDate() {
-      const selectedDate = document.getElementById("adminDate").value;
-      const filteredTokens = tokens.filter(token => token.date === selectedDate);
-
-      if (filteredTokens.length > 0) {
-        alert(`Tokens for ${selectedDate}:
-` + 
-          filteredTokens.map(t => `${t.name}: Token ${t.token}`).join("\n"));
-      } else {
-        alert(`No tokens found for ${selectedDate}.`);
-      }
     }
 
     // Initialize display
