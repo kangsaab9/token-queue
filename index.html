@@ -22,7 +22,7 @@
       border-radius: 15px;
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     }
-    input {
+    input, select {
       width: 100%;
       padding: 10px;
       margin-top: 10px;
@@ -86,6 +86,10 @@
       margin-bottom: 10px;
       color: #555;
     }
+    #tokenList {
+      margin-top: 15px;
+      font-size: 16px;
+    }
   </style>
 </head>
 <body>
@@ -114,19 +118,24 @@
     <input type="password" id="adminPass" placeholder="Enter admin password">
     <button onclick="showAdmin()">Login</button>
     <div id="adminControls" class="admin-controls hidden">
+      <input type="date" id="adminDate">
       <button onclick="prevToken()">⏮️ Previous</button>
       <button onclick="nextToken()">⏭️ Next</button>
+      <button onclick="viewTokens()">📋 View Tokens</button>
+      <div id="tokenList"></div>
     </div>
   </div>
 
   <script>
     let tokenCounter = 0;
     let currentToken = 0;
+    let tokenData = [];
 
     function getToken() {
       tokenCounter++;
       const name = document.getElementById("username").value;
       const date = document.getElementById("requestDate").value;
+      tokenData.push({ name, token: tokenCounter, date });
       document.getElementById("yourToken").innerText = `${name}, your token is: ${tokenCounter} on ${date}`;
     }
 
@@ -165,23 +174,18 @@
       document.getElementById("todayDate").innerText = `📅 Today: ${formattedDate}`;
     }
 
+    function viewTokens() {
+      const selectedDate = document.getElementById("adminDate").value;
+      const list = tokenData.filter(entry => entry.date === selectedDate);
+      const output = list.length > 0
+        ? list.map(e => `🔹 ${e.name} — Token #${e.token}`).join("<br>")
+        : "No tokens found for selected date.";
+      document.getElementById("tokenList").innerHTML = output;
+    }
+
     // Initialize display
     updateTokenDisplay();
     showDate();
   </script>
-</body>
-</html>
-
-<html>
-<head>
-    <title>Token Queue</title>
-</head>
-<body>
-    <h1>Issued Tokens</h1>
-    <div id="issued-tokens">
-        <!-- Existing tokens will be displayed here -->
-    </div>
-    <button id="view-specific-date">View Tokens for a Specific Date</button>
-    <button id="view-all-tokens">View All Tokens</button>
 </body>
 </html>
