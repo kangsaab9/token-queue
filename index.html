@@ -1,3 +1,177 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Token Queue</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f4f4f4;
+      padding: 20px;
+      max-width: 500px;
+      margin: auto;
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    .box {
+      background: #fff;
+      padding: 20px;
+      margin-top: 30px;
+      border-radius: 15px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      border: none;
+      border-radius: 25px;
+      font-weight: bold;
+      color: white;
+      background-color: #007BFF;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    .token-display {
+      text-align: center;
+      font-size: 20px;
+      font-weight: bold;
+      margin-top: 20px;
+    }
+    .circle-row {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 20px;
+    }
+    .circle {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: bold;
+      color: white;
+    }
+    .prev { background-color: #ffc107; }
+    .current { background-color: #28a745; }
+    .next { background-color: #17a2b8; }
+    .admin-controls button {
+      width: 48%;
+      margin: 5px 1%;
+      background-color: #6f42c1;
+    }
+    .admin-controls button:hover {
+      background-color: #563d7c;
+    }
+    .hidden {
+      display: none;
+    }
+    #todayDate {
+      text-align: center;
+      font-weight: bold;
+      font-size: 16px;
+      margin-bottom: 10px;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎟️ Token Queue</h1>
+  <p id="todayDate"></p>
+
+  <div class="box">
+    <h2>Request a Token</h2>
+    <input type="text" id="username" placeholder="Enter your name">
+    <input type="date" id="requestDate">
+    <button onclick="getToken()">Get Token</button>
+    <p id="yourToken" class="token-display"></p>
+  </div>
+
+  <div class="box">
+    <h2>Now Serving</h2>
+    <div class="circle-row">
+      <div class="circle prev" id="prevToken">-</div>
+      <div class="circle current" id="currentToken">0</div>
+      <div class="circle next" id="nextToken">-</div>
+    </div>
+  </div>
+
+  <div class="box">
+    <h2>Admin Panel</h2>
+    <input type="password" id="adminPass" placeholder="Enter admin password">
+    <button onclick="showAdmin()">Login</button>
+    <div id="adminControls" class="admin-controls hidden">
+      <button onclick="prevToken()">⏮️ Previous</button>
+      <button onclick="nextToken()">⏭️ Next</button>
+    </div>
+  </div>
+
+  <script>
+    let tokenCounter = 0;
+    let currentToken = 0;
+
+    function getToken() {
+      tokenCounter++;
+      const name = document.getElementById("username").value;
+      const date = document.getElementById("requestDate").value;
+      document.getElementById("yourToken").innerText = `${name}, your token is: ${tokenCounter} on ${date}`;
+    }
+
+    function showAdmin() {
+      const pass = document.getElementById("adminPass").value;
+      if (pass === "admin123") {
+        document.getElementById("adminControls").classList.remove("hidden");
+      } else {
+        alert("Wrong password!");
+      }
+    }
+
+    function nextToken() {
+      currentToken++;
+      updateTokenDisplay();
+    }
+
+    function prevToken() {
+      if (currentToken > 0) {
+        currentToken--;
+        updateTokenDisplay();
+      }
+    }
+
+    function updateTokenDisplay() {
+      document.getElementById("currentToken").innerText = currentToken;
+      document.getElementById("prevToken").innerText = currentToken > 0 ? currentToken - 1 : "-";
+      document.getElementById("nextToken").innerText = currentToken + 1;
+    }
+
+    function showDate() {
+      const today = new Date();
+      const formattedDate = today.toLocaleDateString('en-IN', {
+        day: 'numeric', month: 'long', year: 'numeric'
+      });
+      document.getElementById("todayDate").innerText = `📅 Today: ${formattedDate}`;
+    }
+
+    // Initialize display
+    updateTokenDisplay();
+    showDate();
+  </script>
+</body>
+</html>
+
 <html>
 <head>
     <title>Token Queue</title>
