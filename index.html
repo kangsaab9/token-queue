@@ -22,13 +22,12 @@
       border-radius: 15px;
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     }
-    input[type="text"], input[type="password"], input[type="date"], select {
+    input {
       width: 100%;
       padding: 10px;
       margin-top: 10px;
       border-radius: 8px;
       border: 1px solid #ccc;
-      box-sizing: border-box; /* Important for padding and width calculation */
     }
     button {
       width: 100%;
@@ -65,7 +64,6 @@
       font-size: 20px;
       font-weight: bold;
       color: white;
-      flex-shrink: 0; 
     }
     .prev { background-color: #ffc107; }
     .current { background-color: #28a745; }
@@ -81,221 +79,93 @@
     .hidden {
       display: none;
     }
-    #currentServingDetails {
-        text-align: center;
-        margin-top: 10px;
-        font-size: 1.1em;
-        font-weight: 500;
-        color: #333;
-    }
-    .delete-button {
-        background-color: #dc3545 !important;
-        margin-top: 20px;
-    }
-    .delete-button:hover {
-        background-color: #c82333 !important;
+    #todayDate {
+      text-align: center;
+      font-weight: bold;
+      font-size: 16px;
+      margin-bottom: 10px;
+      color: #555;
     }
   </style>
 </head>
 <body>
-  <h1>🎟 Token Queue</h1>
+  <h1>🎟️ Token Queue</h1>
+  <p id="todayDate"></p>
 
   <div class="box">
     <h2>Request a Token</h2>
     <input type="text" id="username" placeholder="Enter your name">
-    <label for="queueDate">Select Date:</label>
-    <input type="date" id="queueDate">
     <button onclick="getToken()">Get Token</button>
     <p id="yourToken" class="token-display"></p>
   </div>
 
   <div class="box">
-    <h2>Now Serving (Admin Selection Required)</h2>
+    <h2>Now Serving</h2>
     <div class="circle-row">
       <div class="circle prev" id="prevToken">-</div>
       <div class="circle current" id="currentToken">0</div>
       <div class="circle next" id="nextToken">-</div>
     </div>
-    <p id="currentServingDetails">Select date in Admin Panel.</p>
   </div>
 
   <div class="box">
     <h2>Admin Panel</h2>
     <input type="password" id="adminPass" placeholder="Enter admin password">
     <button onclick="showAdmin()">Login</button>
-    <div id="adminControls" class="hidden">
-      
-      <h3>View Tokens for Date:</h3>
-      <input type="date" id="adminDateSelect">
-      <button onclick="loadTokensForAdmin()">Load Tokens</button>
-      
-      <div id="queueControls" class="admin-controls hidden">
-        <h3>Queue Control for <span id="selectedDateDisplay"></span></h3>
-        <button onclick="prevToken()">⏮ Previous</button>
-        <button onclick="nextToken()">⏭ Next</button>
-      </div>
-      
-      <button onclick="deleteTokensByDate()" class="delete-button">🗑 Delete Data for Selected Date</button>
+    <div id="adminControls" class="admin-controls hidden">
+      <button onclick="prevToken()">⏮️ Previous</button>
+      <button onclick="nextToken()">⏭️ Next</button>
     </div>
   </div>
 
   <script>
-    // --- Global State Variables ---
-    // Stores tokens: { "YYYY-MM-DD": [{number: 1, name: "Name"}, ...] }
-    let allTokens = {}; 
-    let currentTokenQueue = []; // The queue for the currently selected date
-    let currentTokenIndex = 0;
-    let selectedAdminDate = null; // The date currently being managed by admin
-
-    const STORAGE_KEY = 'tokenQueueData';
-    const ADMIN_PASS = "admin123";
-
-    // --- Data Persistence Functions ---
-
-    function loadAllTokens() {
-        const storedData = localStorage.getItem(STORAGE_KEY);
-        if (storedData) {
-            allTokens = JSON.parse(storedData);
-        } else {
-            allTokens = {};
-        }
-    }
-
-    function saveAllTokens() {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(allTokens));
-    }
-
-    // --- User Token Functions ---
-
-    function getDefaultDate() {
-        return new Date().toISOString().split('T')[0];
-    }
-    
-    // Set default date for user selection
-    document.getElementById("queueDate").value = getDefaultDate();
-    document.getElementById("adminDateSelect").value = getDefaultDate();
-
+    let tokenCounter = 0;
+    let currentToken = 0;
 
     function getToken() {
-      const name = document.getElementById("username").value.trim();
-      const date = document.getElementById("queueDate").value;
-
-      if (!name || !date) {
-        alert("Please enter your name and select a date.");
-        return;
-      }
-      
-      // Initialize the queue for this date if it doesn't exist
-      if (!allTokens[date]) {
-          allTokens[date] = [];
-      }
-      
-      // Determine the next token number for THIS date
-      const nextTokenNumber = allTokens[date].length + 1;
-      
-      const newToken = { number: nextTokenNumber, name: name };
-      
-      // Add token and save
-      allTokens[date].push(newToken);
-      saveAllTokens();
-
-      document.getElementById("yourToken").innerText = ${name}, your token for ${date} is: ${nextTokenNumber};
+      tokenCounter++;
+      const name = document.getElementById("username").value;
+      document.getElementById("yourToken").innerText = `${name}, your token is: ${tokenCounter}`;
     }
-
-    // --- Admin Control Functions ---
 
     function showAdmin() {
       const pass = document.getElementById("adminPass").value;
-      if (pass === ADMIN_PASS) {
+      if (pass === "admin123") {
         document.getElementById("adminControls").classList.remove("hidden");
-        // Load tokens for the default date when logging in
-        loadTokensForAdmin(); 
       } else {
         alert("Wrong password!");
       }
     }
 
-    function loadTokensForAdmin() {
-        selectedAdminDate = document.getElementById("adminDateSelect").value;
-        if (!selectedAdminDate) {
-            alert("Please select a date to manage.");
-            return;
-        }
-
-        // Set the current queue to the queue for the selected date
-        currentTokenQueue = allTokens[selectedAdminDate] || [];
-        currentTokenIndex = 0; // Reset to the start of the queue
-        
-        document.getElementById("selectedDateDisplay").innerText = selectedAdminDate;
-        document.getElementById("queueControls").classList.remove("hidden");
-
-        updateTokenDisplay();
-    }
-
     function nextToken() {
-      if (currentTokenIndex < currentTokenQueue.length) {
-          currentTokenIndex++;
-          updateTokenDisplay();
-      }
+      currentToken++;
+      updateTokenDisplay();
     }
 
     function prevToken() {
-      if (currentTokenIndex > 0) {
-        currentTokenIndex--;
+      if (currentToken > 0) {
+        currentToken--;
         updateTokenDisplay();
       }
     }
-    
-    function deleteTokensByDate() {
-        const dateToDelete = document.getElementById("adminDateSelect").value;
-        if (!dateToDelete) {
-            alert("Please select a date to delete.");
-            return;
-        }
-
-        if (confirm(Are you sure you want to delete ALL token data for the date: ${dateToDelete}? This cannot be undone.)) {
-            // Delete the entry from the global allTokens object
-            delete allTokens[dateToDelete];
-            saveAllTokens();
-            
-            // Clear the currently displayed queue if it matches the deleted date
-            if (selectedAdminDate === dateToDelete) {
-                currentTokenQueue = [];
-                currentTokenIndex = 0;
-            }
-            updateTokenDisplay();
-            alert(Token data for ${dateToDelete} has been deleted.);
-        }
-    }
-
-
-    // --- Display Update Functions ---
 
     function updateTokenDisplay() {
-      // Determine which token to display (index-based)
-      const currentTokenData = currentTokenQueue[currentTokenIndex] || { number: 0, name: '-' };
-      const previousTokenData = currentTokenQueue[currentTokenIndex - 1] || { number: '-', name: '-' };
-      const nextTokenData = currentTokenQueue[currentTokenIndex + 1] || { number: '-', name: '-' };
-
-      // Update the circles
-      document.getElementById("currentToken").innerText = currentTokenData.number;
-      document.getElementById("prevToken").innerText = previousTokenData.number;
-      document.getElementById("nextToken").innerText = nextTokenData.number;
-
-      // Update the details line with the name
-      if (currentTokenData.number > 0) {
-          document.getElementById("currentServingDetails").innerHTML = **Token ${currentTokenData.number}**: ${currentTokenData.name} on **${selectedAdminDate}**;
-      } else if (selectedAdminDate) {
-          document.getElementById("currentServingDetails").innerText = Queue for ${selectedAdminDate} is empty or completed.;
-      } else {
-          document.getElementById("currentServingDetails").innerText = Select date in Admin Panel.;
-      }
+      document.getElementById("currentToken").innerText = currentToken;
+      document.getElementById("prevToken").innerText = currentToken > 0 ? currentToken - 1 : "-";
+      document.getElementById("nextToken").innerText = currentToken + 1;
     }
 
-    // --- Initialization ---
+    function showDate() {
+      const today = new Date();
+      const formattedDate = today.toLocaleDateString('en-IN', {
+        day: 'numeric', month: 'long', year: 'numeric'
+      });
+      document.getElementById("todayDate").innerText = `📅 Today: ${formattedDate}`;
+    }
 
-    loadAllTokens();
-    updateTokenDisplay(); // Initial display state
+    // Initialize display
+    updateTokenDisplay();
+    showDate();
   </script>
 </body>
 </html>
