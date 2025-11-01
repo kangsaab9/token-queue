@@ -22,10 +22,16 @@
       border-radius: 15px;
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     }
+    label {
+      display: block;
+      margin-top: 10px;
+      font-weight: bold;
+      color: #333;
+    }
     input, select {
       width: 100%;
       padding: 10px;
-      margin-top: 10px;
+      margin-top: 5px;
       border-radius: 8px;
       border: 1px solid #ccc;
     }
@@ -99,6 +105,7 @@
   <div class="box">
     <h2>Request a Token</h2>
     <input type="text" id="username" placeholder="Enter your name">
+    <label for="requestDate">Date</label>
     <input type="date" id="requestDate">
     <button onclick="getToken()">Get Token</button>
     <p id="yourToken" class="token-display"></p>
@@ -118,6 +125,7 @@
     <input type="password" id="adminPass" placeholder="Enter admin password">
     <button onclick="showAdmin()">Login</button>
     <div id="adminControls" class="admin-controls hidden">
+      <label for="adminDate">Date</label>
       <input type="date" id="adminDate">
       <button onclick="prevToken()">⏮️ Previous</button>
       <button onclick="nextToken()">⏭️ Next</button>
