@@ -116,17 +116,21 @@
     <div id="adminControls" class="admin-controls hidden">
       <button onclick="prevToken()">⏮️ Previous</button>
       <button onclick="nextToken()">⏭️ Next</button>
+      <input type="date" id="adminDate" placeholder="Choose a date">
+      <button onclick="filterTokensByDate()">Show Tokens</button>
     </div>
   </div>
 
   <script>
     let tokenCounter = 0;
     let currentToken = 0;
+    let tokens = []; // Array to store tokens with date
 
     function getToken() {
       tokenCounter++;
       const name = document.getElementById("username").value;
       const date = document.getElementById("requestDate").value;
+      tokens.push({ token: tokenCounter, name, date });
       document.getElementById("yourToken").innerText = `${name}, your token is: ${tokenCounter} on ${date}`;
     }
 
@@ -163,6 +167,19 @@
         day: 'numeric', month: 'long', year: 'numeric'
       });
       document.getElementById("todayDate").innerText = `📅 Today: ${formattedDate}`;
+    }
+
+    function filterTokensByDate() {
+      const selectedDate = document.getElementById("adminDate").value;
+      const filteredTokens = tokens.filter(token => token.date === selectedDate);
+
+      if (filteredTokens.length > 0) {
+        alert(`Tokens for ${selectedDate}:
+` + 
+          filteredTokens.map(t => `${t.name}: Token ${t.token}`).join("\n"));
+      } else {
+        alert(`No tokens found for ${selectedDate}.`);
+      }
     }
 
     // Initialize display
