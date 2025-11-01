@@ -96,6 +96,13 @@
       margin-top: 15px;
       font-size: 16px;
     }
+    #servingDate {
+      text-align: center;
+      font-size: 16px;
+      font-weight: bold;
+      margin-top: 10px;
+      color: #333;
+    }
   </style>
 </head>
 <body>
@@ -118,6 +125,7 @@
       <div class="circle current" id="currentToken">0</div>
       <div class="circle next" id="nextToken">-</div>
     </div>
+    <p id="servingDate">📅 Date: Not selected</p>
   </div>
 
   <div class="box">
@@ -126,7 +134,7 @@
     <button onclick="showAdmin()">Login</button>
     <div id="adminControls" class="admin-controls hidden">
       <label for="adminDate">Date</label>
-      <input type="date" id="adminDate">
+      <input type="date" id="adminDate" onchange="updateServingDate()">
       <button onclick="prevToken()">⏮️ Previous</button>
       <button onclick="nextToken()">⏭️ Next</button>
       <button onclick="viewTokens()">📋 View Tokens</button>
@@ -172,6 +180,13 @@
       document.getElementById("currentToken").innerText = currentToken;
       document.getElementById("prevToken").innerText = currentToken > 0 ? currentToken - 1 : "-";
       document.getElementById("nextToken").innerText = currentToken + 1;
+    }
+
+    function updateServingDate() {
+      const selectedDate = document.getElementById("adminDate").value;
+      document.getElementById("servingDate").innerText = selectedDate
+        ? `📅 Date: ${selectedDate}`
+        : "📅 Date: Not selected";
     }
 
     function showDate() {
