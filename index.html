@@ -11,7 +11,7 @@
       max-width: 500px;
       margin: auto;
     }
-    h1 {
+    h1, h2 {
       text-align: center;
       color: #333;
     }
@@ -23,12 +23,11 @@
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     }
     label {
-      display: block;
-      margin-top: 10px;
       font-weight: bold;
-      color: #333;
+      margin-top: 10px;
+      display: block;
     }
-    input, select {
+    input, button {
       width: 100%;
       padding: 10px;
       margin-top: 5px;
@@ -36,24 +35,13 @@
       border: 1px solid #ccc;
     }
     button {
-      width: 100%;
-      padding: 12px;
-      margin-top: 10px;
-      border: none;
-      border-radius: 25px;
-      font-weight: bold;
-      color: white;
       background-color: #007BFF;
-      transition: background-color 0.3s;
+      color: white;
+      font-weight: bold;
+      border: none;
     }
     button:hover {
       background-color: #0056b3;
-    }
-    .token-display {
-      text-align: center;
-      font-size: 20px;
-      font-weight: bold;
-      margin-top: 20px;
     }
     .circle-row {
       display: flex;
@@ -74,48 +62,22 @@
     .prev { background-color: #ffc107; }
     .current { background-color: #28a745; }
     .next { background-color: #17a2b8; }
-    .admin-controls button {
-      width: 48%;
-      margin: 5px 1%;
-      background-color: #6f42c1;
-    }
-    .admin-controls button:hover {
-      background-color: #563d7c;
-    }
-    .hidden {
-      display: none;
-    }
-    #todayDate {
-      text-align: center;
-      font-weight: bold;
-      font-size: 16px;
-      margin-bottom: 10px;
-      color: #555;
-    }
-    #tokenList {
-      margin-top: 15px;
-      font-size: 16px;
-    }
-    #servingDate {
-      text-align: center;
-      font-size: 16px;
-      font-weight: bold;
-      margin-top: 10px;
-      color: #333;
-    }
+    .hidden { display: none; }
+    #tokenList { margin-top: 15px; font-size: 16px; }
+    #servingDate { text-align: center; font-weight: bold; margin-top: 10px; }
   </style>
 </head>
 <body>
   <h1>🎟️ Token Queue</h1>
-  <p id="todayDate"></p>
 
   <div class="box">
     <h2>Request a Token</h2>
+    <label for="username">Name</label>
     <input type="text" id="username" placeholder="Enter your name">
     <label for="requestDate">Date</label>
     <input type="date" id="requestDate">
     <button onclick="getToken()">Get Token</button>
-    <p id="yourToken" class="token-display"></p>
+    <p id="yourToken" style="text-align:center; font-weight:bold;"></p>
   </div>
 
   <div class="box">
@@ -130,29 +92,36 @@
 
   <div class="box">
     <h2>Admin Panel</h2>
+    <label for="adminPass">Admin Password</label>
     <input type="password" id="adminPass" placeholder="Enter admin password">
     <button onclick="showAdmin()">Login</button>
-    <div id="adminControls" class="admin-controls hidden">
+    <div id="adminControls" class="hidden">
       <label for="adminDate">Date</label>
       <input type="date" id="adminDate" onchange="updateServingDate()">
       <button onclick="prevToken()">⏮️ Previous</button>
       <button onclick="nextToken()">⏭️ Next</button>
       <button onclick="viewTokens()">📋 View Tokens</button>
+      <button onclick="deleteTokens()">🗑️ Delete Tokens</button>
       <div id="tokenList"></div>
     </div>
   </div>
 
   <script>
+    const scriptURL = "https://script.google.com/macros/s/AKfycbxxsMgOaOX-wJKvdYteT4ts0ZLFqEBpIfG3WvDuB0WLh28t1-fj6Ai3foY_6cgNzGbj/exec";
     let tokenCounter = 0;
     let currentToken = 0;
-    let tokenData = [];
 
     function getToken() {
       tokenCounter++;
       const name = document.getElementById("username").value;
       const date = document.getElementById("requestDate").value;
-      tokenData.push({ name, token: tokenCounter, date });
-      document.getElementById("yourToken").innerText = `${name}, your token is: ${tokenCounter} on ${date}`;
+      fetch(scriptURL, {
+        method: "POST",
+        body: JSON.stringify({ name, token: tokenCounter, date }),
+        headers: { "Content-Type": "application/json" }
+      }).then(() => {
+        document.getElementById("yourToken").innerText = `${name}, your token is: ${tokenCounter} on ${date}`;
+      });
     }
 
     function showAdmin() {
@@ -189,26 +158,31 @@
         : "📅 Date: Not selected";
     }
 
-    function showDate() {
-      const today = new Date();
-      const formattedDate = today.toLocaleDateString('en-IN', {
-        day: 'numeric', month: 'long', year: 'numeric'
-      });
-      document.getElementById("todayDate").innerText = `📅 Today: ${formattedDate}`;
-    }
-
     function viewTokens() {
-      const selectedDate = document.getElementById("adminDate").value;
-      const list = tokenData.filter(entry => entry.date === selectedDate);
-      const output = list.length > 0
-        ? list.map(e => `🔹 ${e.name} — Token #${e.token}`).join("<br>")
-        : "No tokens found for selected date.";
-      document.getElementById("tokenList").innerHTML = output;
+      const date = document.getElementById("adminDate").value;
+      fetch(`${scriptURL}?date=${date}`)
+        .then(res => res.json())
+        .then(data => {
+          const output = data.length
+            ? data.map(e => `🔹 ${e.name} — Token #${e.token}`).join("<br>")
+            : "No tokens found for selected date.";
+          document.getElementById("tokenList").innerHTML = output;
+        });
     }
 
-    // Initialize display
+    function deleteTokens() {
+      const date = document.getElementById("adminDate").value;
+      fetch(scriptURL, {
+        method: "POST",
+        body: JSON.stringify({ action: "delete", date }),
+        headers: { "Content-Type": "application/json" }
+      }).then(() => {
+        alert("Tokens deleted for " + date);
+        document.getElementById("tokenList").innerHTML = "";
+      });
+    }
+
     updateTokenDisplay();
-    showDate();
   </script>
 </body>
 </html>
